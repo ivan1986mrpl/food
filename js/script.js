@@ -105,11 +105,54 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
     }
 
     setClock('.timer', deadline);
-// ======================================
 
+// ==================== MODAL ==================data-modal data-close
 
+const modalTrigger = document.querySelectorAll('[data-modal]'),
+      modal = document.querySelector('.modal'),
+      modalCloseBtn = document.querySelector('[data-close]');
 
+  function openModal() {
+    modal.classList.add('show');
+    modal.classList.remove("hide");
+    document.body.style.overflow = 'hidden';//(чтобы не скролллился сайт при открытом окне)
+    clearInterval(modalTimerId);//(если пользователь сам открыл окно, то setTimeout не будет его повторно открывать через ...секунд)
+}
 
+modalTrigger.forEach(btn => {
+    btn.addEventListener('click', openModal);
+}); 
 
+function closeModal() {
+    modal.classList.add('hide');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
 
+modalCloseBtn.addEventListener('click', closeModal);
+
+modal.addEventListener('click', (event) => {//(чтобы окно закрывалось по клику на подложку, а не на модальное окно)
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape'&& modal.classList.contains('show')) {//(В event есть свойство code, которое проверяет на какую клавишу нажал пользователь и у каждой клавиши есть свой код)
+        closeModal();
+    }
+});//(событие 'keydown' вешается на документ и означает нажатие клавиши на клавиатуре)
+
+//(чтобы модальное окно открывалось, когда пользователь долистает до конца страницы и через несколько секунд задержки)
+const modalTimerId = setTimeout(openModal, 5000);
+
+function showModalByScroll() {
+    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {//(как только пользователь долистал до конца - 1 пиксель)
+        openModal();
+        window.removeEventListener('scroll', showModalByScroll);//(чтобы модалка выскакивала только один раз при скролле до конца страницы)
+    }
+}
+
+window.addEventListener('scroll', showModalByScroll);
+//====================================================
 });
