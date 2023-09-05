@@ -225,6 +225,59 @@ window.addEventListener('scroll', showModalByScroll);
         21,
         ".menu .container"
     ).render();//(создаем объект, сразу на него на месте вызываем метод render. Если таким синтаксисом создавать его, то после того, как он отработает, он исчезнет, потому что мы нигде не сохраняем на него ссылок. Это удобно, когда нужно только одн раз его использовать)
+
+    // =============== FORMS ===================(отправка данных с форм на сайте)
+
+    const forms = document.querySelectorAll('form');//(получение всех форм на странице)
+
+    const messege = {//(список всплывающих фраз)
+        loading: 'Загрузка',
+        success: 'Спасибо, скоро мы с вами свяжемся!',
+        failure: 'Что-то пошло не так...',
+    };
+
+    forms.forEach(item => {//(перебираем, чтобы под каждую форму подвязать функцию postData)
+        postData(item);
+    });
+
+    function postData(form) {
+        form.addEventListener('submit', (e) => {//(submit срабатывает каждый раз, как пытаемся отправить какую-то форму)
+            e.preventDefault();//(отменяем стандартное поведение браузера, перезагрузку при отправке формы)
+
+            const statusMessege = document.createElement('div');//(динамически добавляемый текстовый блок с всплывающим сообщением)
+            statusMessege.classList.add('status');
+            statusMessege.textContent = messege.loading;//(внутрь дива помещаем то сообщение, которое надо показать)
+            form.append(statusMessege);//(помещаем на страницу)
+
+            const request = new XMLHttpRequest();
+            request.open('POST', 'server.php');//(метод, чтобы настроить этот запрос)
+
+            request.setRequestHeader('Content-type', 'application/json');//(когда используем связку XMLHttpRequest и formData, заголовок устанавливать не нужно, он устанавливается автоматически. Если его установить, на сервере не получим данных. Еси отправляем данные в формате JSON, то устанавливаем заголовок 'application/json')
+            const formData = new FormData(form);//(проверить, чтобы в верстке в теге input были прописаны атрибуты name и они были уникальны для каждого input)
+
+            const object = {};//(чтобы объект formData превратить в формат JSON создаем переменную и ложим в нее пустой объект. Потом переберем formData при помощи цикла forEach и все данные внутри поместим в object. )
+            formData.forEach(function(value, key) {
+                object[key] = value;
+            });
+
+            const json = JSON.stringify(object);//(когда мы получили обычный объект, а не formData, используем конвертацию JSON)
+
+            request.send(json);//(отправляем объект)
+
+            request.addEventListener('load', () => {//(load = конечная загрузка нашего запроса)
+                if (request.status === 200) {
+                    console.log(request.response);//(не обязательно)
+                    statusMessege.textContent = messege.success;
+                    form.reset();//(очистка формы)
+                    setTimeout(() => {//(чтобы удалить блок с сообщением)
+                        statusMessege.remove();
+                    }, 2000);
+                } else {
+                    statusMessege.textContent = messege.failure;
+                }
+            });
+        });
+    }//(при работе на локальном сервере надо сбрасывать кеш. на Виндовс это shift + F5)
 //========================================================
 });
 
