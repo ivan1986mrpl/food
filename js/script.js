@@ -43,7 +43,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
 
 // ====================== TIMER ================
 
-    const deadline = '2023-09-31';//(перменная делайн, в нее помещаем дату в виде строки)
+    const deadline = '2023-10-31';//(перменная делайн, в нее помещаем дату в виде строки)
 
     function getTimeRemaining(endtime) {//(функция, которая определяет разницу между дедлайном и нашим сегодняшним временем)
         let days, hours, minutes, seconds;
@@ -249,10 +249,6 @@ window.addEventListener('scroll', showModalByScroll);
             `;//(внутрь дива помещаем то сообщение, которое надо показать)
             form.insertAdjacentElement('afterend', statusMessege);//(помещаем на страницу)
 
-            const request = new XMLHttpRequest();
-            request.open('POST', 'server.php');//(метод, чтобы настроить этот запрос)
-
-            request.setRequestHeader('Content-type', 'application/json');//(когда используем связку XMLHttpRequest и formData, заголовок устанавливать не нужно, он устанавливается автоматически. Если его установить, на сервере не получим данных. Еси отправляем данные в формате JSON, то устанавливаем заголовок 'application/json')
             const formData = new FormData(form);//(проверить, чтобы в верстке в теге input были прописаны атрибуты name и они были уникальны для каждого input)
 
             const object = {};//(чтобы объект formData превратить в формат JSON создаем переменную и ложим в нее пустой объект. Потом переберем formData при помощи цикла forEach и все данные внутри поместим в object. )
@@ -260,20 +256,24 @@ window.addEventListener('scroll', showModalByScroll);
                 object[key] = value;
             });
 
-            const json = JSON.stringify(object);//(когда мы получили обычный объект, а не formData, используем конвертацию JSON)
-
-            request.send(json);//(отправляем объект)
-
-            request.addEventListener('load', () => {//(load = конечная загрузка нашего запроса)
-                if (request.status === 200) {
-                    console.log(request.response);//(не обязательно)
-                    showThanksModal(messege.success);
-                    form.reset();//(очистка формы)                    
-                    statusMessege.remove();//(чтобы удалить блок с сообщением)                    
-                } else {
-                    showThanksModal(messege.failure);
-                }
+            fetch('server.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(object)//(когда мы получили обычный объект, а не formData, используем конвертацию JSON)
+            })
+            .then(data => data.text())
+            .then(data => {
+                console.log(data);
+                showThanksModal(message.success);
+                statusMessage.remove();
+            }).catch(() => {
+                showThanksModal(message.failure);
+            }).finally(() => {
+                form.reset();
             });
+
         });
     }//(при работе на локальном сервере надо сбрасывать кеш. на Виндовс это shift + F5)
 
@@ -304,6 +304,7 @@ window.addEventListener('scroll', showModalByScroll);
     }
 
 //========================================================
+
 });
 
 
