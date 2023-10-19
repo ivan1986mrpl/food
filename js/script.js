@@ -1,70 +1,57 @@
+window.addEventListener('DOMContentLoaded', function() {
 
-
-window.addEventListener('DOMContentLoaded', () => {//(назначение большого глобального обработчика события на всю страницу)
-
-    // ====================== TABS ================
+    // Tabs
     
-    const tabs = document.querySelectorAll('.tabheader__item'),
-            tabsContent = document.querySelectorAll('.tabcontent'),
-            tabsParent = document.querySelector('.tabheader__items');//(получаем родителя табов, чтобы использовать делегирование событий)
+	let tabs = document.querySelectorAll('.tabheader__item'),
+		tabsContent = document.querySelectorAll('.tabcontent'),
+		tabsParent = document.querySelector('.tabheader__items');
 
-    function hideTabContent() {//(функция, которая скрывает ненужные табы)
+	function hideTabContent() {
+        
         tabsContent.forEach(item => {
-            item.style.display = 'none';
+            item.classList.add('hide');
+            item.classList.remove('show', 'fade');
+        });
 
-            tabs.forEach(item => {
-                item.classList.remove('tabheader__item_active');//(точку не ставим, метод и так для классов)
-            });
-        });//(т.к. tabsContent это псевдомассив, перебираем его через forEach и скрываем весь контент табов и удаляем класс активности)
-    }
+        tabs.forEach(item => {
+            item.classList.remove('tabheader__item_active');
+        });
+	}
 
-    function showTabContent(i = 0) {//(в стандарте es6 появилась возможность i назначать 0 элементом по умолчанию. Тогда если вызывать эту функцию без аргумента, подставится сразу 0 дефолтное значение вместо i)
-        tabsContent[i].style.display = 'block';
+	function showTabContent(i = 0) {
+        tabsContent[i].classList.add('show', 'fade');
+        tabsContent[i].classList.remove('hide');
         tabs[i].classList.add('tabheader__item_active');
-    }//(функция, которая показывает табы. i = элемент, который надо показать и добавить ему класс активности)
-    
+    }
     
     hideTabContent();
-    //showTabContent(0);//(передаем вместо i первый таб. Так надо было делать до стандарта ES6)
     showTabContent();
 
-    //(используя делегирование событий. назначаем событие клика)
-    tabsParent.addEventListener('click', (event) => {
-        const target = event.target;
-
-        if(target && target.classList.contains('tabheader__item')) {//(если полльзователь кликнул в какой-то таб, мы определяем номер таб и вызываем функцию showTabContent(); с этим номером в аргументе. Перебираем все табы, которые лежат в псевдомассиве tabs и сравниваем. Если элемент, который кликнул пользователь совпадает с имеющимся на странице, то этот элемент по номеру показываем на странице)
+	tabsParent.addEventListener('click', function(event) {
+		const target = event.target;
+		if(target && target.classList.contains('tabheader__item')) {
             tabs.forEach((item, i) => {
                 if (target == item) {
                     hideTabContent();
                     showTabContent(i);
                 }
             });
-        }
+		}
     });
+    
+    // Timer
 
-// ====================== TIMER ================
+    const deadline = '2023-11-11';
 
-    const deadline = '2023-09-31';//(перменная делайн, в нее помещаем дату в виде строки)
-
-    function getTimeRemaining(endtime) {//(функция, которая определяет разницу между дедлайном и нашим сегодняшним временем)
-        let days, hours, minutes, seconds;
-
-        const t = Date.parse(endtime) - Date.parse(new Date());//(от нашей даты отнимаем количество маллисекунд, которое будет до конечного времени)
-
-        if (t <= 0) {
-            days = 0;
-            hours = 0;
-            minutes = 0;
-            seconds = 0;
-        } else {
-            days = Math.floor( (t/(1000*60*60*24)) ),//(оператор округления до ближайшего целого. (общее кол-во миллисек делим на кол-во мс в сутках))
-            seconds = Math.floor( (t/1000) % 60 ),//(общее количество часов делим на 24 и выводим остаток от деления)
+    function getTimeRemaining(endtime) {
+        const t = Date.parse(endtime) - Date.parse(new Date()),
+            days = Math.floor( (t/(1000*60*60*24)) ),
+            seconds = Math.floor( (t/1000) % 60 ),
             minutes = Math.floor( (t/1000/60) % 60 ),
             hours = Math.floor( (t/(1000*60*60) % 24) );
-        }
-    
+
         return {
-            'total': t,//(общее кол-во миллисекунд)
+            'total': t,
             'days': days,
             'hours': hours,
             'minutes': minutes,
@@ -79,7 +66,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             return num;
         }
     }
-    
+
     function setClock(selector, endtime) {
 
         const timer = document.querySelector(selector),
@@ -91,7 +78,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
 
         updateClock();
 
-        function updateClock() {//(функция, которая обновляет таймер каждую секунду)
+        function updateClock() {
             const t = getTimeRemaining(endtime);
 
             days.innerHTML = getZero(t.days);
@@ -99,62 +86,61 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             minutes.innerHTML = getZero(t.minutes);
             seconds.innerHTML = getZero(t.seconds);
 
-            if (t.total <= 0) {//(функция остановки таймера, если время вышло и идет в отрицательную сторону)
+            if (t.total <= 0) {
                 clearInterval(timeInterval);
             }
         }
     }
-    
+
     setClock('.timer', deadline);
-    
-    // ==================== MODAL ==================data-modal data-close
-    
+
+    // Modal
+
     const modalTrigger = document.querySelectorAll('[data-modal]'),
-          modal = document.querySelector('.modal');
-    
-      function openModal() {
-        modal.classList.add('show');
-        modal.classList.remove("hide");
-        document.body.style.overflow = 'hidden';//(чтобы не скролллился сайт при открытом окне)
-        clearInterval(modalTimerId);//(если пользователь сам открыл окно, то setTimeout не будет его повторно открывать через ...секунд)
-    }
-    
+        modal = document.querySelector('.modal');
+
     modalTrigger.forEach(btn => {
         btn.addEventListener('click', openModal);
-    }); 
-    
+    });
+
     function closeModal() {
         modal.classList.add('hide');
         modal.classList.remove('show');
         document.body.style.overflow = '';
     }
-    
-    modal.addEventListener('click', (event) => {//(чтобы окно закрывалось по клику на подложку, а не на модальное окно)
-        if (event.target === modal || event.target.getAttribute('data-close') == '') {
+
+    function openModal() {
+        modal.classList.add('show');
+        modal.classList.remove('hide');
+        document.body.style.overflow = 'hidden';
+        clearInterval(modalTimerId);
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.getAttribute('data-close') == "") {
             closeModal();
         }
     });
-    
+
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Escape'&& modal.classList.contains('show')) {//(В event есть свойство code, которое проверяет на какую клавишу нажал пользователь и у каждой клавиши есть свой код)
+        if (e.code === "Escape" && modal.classList.contains('show')) { 
             closeModal();
         }
-    });//(событие 'keydown' вешается на документ и означает нажатие клавиши на клавиатуре)
-    
-    //(чтобы модальное окно открывалось, когда пользователь долистает до конца страницы и через несколько секунд задержки)
-    const modalTimerId = setTimeout(openModal, 50000);//закоментировать,чтобы не выскакивало
-    
+    });
+
+    const modalTimerId = setTimeout(openModal, 300000);
+    // Изменил значение, чтобы не отвлекало
+
     function showModalByScroll() {
-        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {//(как только пользователь долистал до конца - 1 пиксель)
+        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
             openModal();
-            window.removeEventListener('scroll', showModalByScroll);//(чтобы модалка выскакивала только один раз при скролле до конца страницы)
+            window.removeEventListener('scroll', showModalByScroll);
         }
     }
-    
     window.addEventListener('scroll', showModalByScroll);
-    //====================================================
-    //=========== ИСПОЛЬЗУЕМ КЛАССЫ ДЛЯ КАРТОЧЕК  =======
-    
+
+    // Используем классы для создание карточек меню
+
     class MenuCard {
         constructor(src, alt, title, descr, price, parentSelector, ...classes) {
             this.src = src;
@@ -162,27 +148,27 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             this.title = title;
             this.descr = descr;
             this.price = price;
-            this.classes = classes;//(rest оператор = массив)
+            this.classes = classes;
             this.parent = document.querySelector(parentSelector);
             this.transfer = 27;
             this.changeToUAH(); 
         }
 
-        changeToUAH() {//(конвертация из доллара в гривню)
+        changeToUAH() {
             this.price = this.price * this.transfer; 
         }
-    
-        render() {
-            const element = document.createElement('div');//(создаем див)
 
-            if (this.classes.length === 0) {//(если в массив с классами не передался не один класс, то перезаписываем в массив дефолтный класс menu__item и добавляем его элементу)
-                this.element = 'menu__item';
-                element.classList.add(this.element);
+        render() {
+            const element = document.createElement('div');
+
+            if (this.classes.length === 0) {
+                this.classes = "menu__item";
+                element.classList.add(this.classes);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
             }
-            
-            element.innerHTML = `                
+
+            element.innerHTML = `
                 <img src=${this.src} alt=${this.alt}>
                 <h3 class="menu__item-subtitle">${this.title}</h3>
                 <div class="menu__item-descr">${this.descr}</div>
@@ -190,81 +176,94 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
                 <div class="menu__item-price">
                     <div class="menu__item-cost">Цена:</div>
                     <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
-                </div>                
-            `;//(создаем структуру)
-            this.parent.append(element);//(помещаем на страницу)
+                </div>
+            `;
+            this.parent.append(element);
         }
     }
-    
-    new MenuCard(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес New"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        9,
-        ".menu .container"
-        //'menu__item'//(пишем без точки впереди, потому что будет помещено в массив)
-    ).render();
 
-    new MenuCard(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное New"',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        14,
-        ".menu .container"
-    ).render();
-    
-    new MenuCard(
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум New”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-        21,
-        ".menu .container"
-    ).render();//(создаем объект, сразу на него на месте вызываем метод render. Если таким синтаксисом создавать его, то после того, как он отработает, он исчезнет, потому что мы нигде не сохраняем на него ссылок. Это удобно, когда нужно только одн раз его использовать)
+    getResource('http://localhost:3000/menu')
+        .then(data => {
+            data.forEach(({img, altimg, title, descr, price}) => {
+                new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
+            });
+        });
 
-    // =============== FORMS ===================(отправка данных с форм на сайте)
+    // getResource('http://localhost:3000/menu')
+    //     .then(data => createCard(data));
 
-    const forms = document.querySelectorAll('form');//(получение всех форм на странице)
+    // function createCard(data) {
+    //     data.forEach(({img, altimg, title, descr, price}) => {
+    //         const element = document.createElement('div');
 
-    const messege = {//(список всплывающих фраз)
+    //         element.classList.add("menu__item");
+
+    //         element.innerHTML = `
+    //             <img src=${img} alt=${altimg}>
+    //             <h3 class="menu__item-subtitle">${title}</h3>
+    //             <div class="menu__item-descr">${descr}</div>
+    //             <div class="menu__item-divider"></div>
+    //             <div class="menu__item-price">
+    //                 <div class="menu__item-cost">Цена:</div>
+    //                 <div class="menu__item-total"><span>${price}</span> грн/день</div>
+    //             </div>
+    //         `;
+    //         document.querySelector(".menu .container").append(element);
+    //     });
+    // }
+
+    // Forms
+
+    const forms = document.querySelectorAll('form');
+    const message = {
         loading: 'img/form/spinner.svg',
-        success: 'Спасибо, скоро мы с вами свяжемся!',
-        failure: 'Что-то пошло не так...',
+        success: 'Спасибо! Скоро мы с вами свяжемся',
+        failure: 'Что-то пошло не так...'
     };
-    
-    forms.forEach(item => {//(перебираем, чтобы под каждую форму подвязать функцию postData)
-        postData(item);
-    });
-    
-    function postData(form) {
-        form.addEventListener('submit', (e) => {//(submit срабатывает каждый раз, как пытаемся отправить какую-то форму)
-            e.preventDefault();//(отменяем стандартное поведение браузера, перезагрузку при отправке формы)
 
-            const statusMessege = document.createElement('img');//(динамически добавляемый текстовый блок с всплывающим сообщением)
-            statusMessege.src = messege.loading;
-            statusMessege.style.cssText = `
+    forms.forEach(item => {
+        bindPostData(item);
+    });
+
+    const postData = async (url, data) => {
+        let res = await fetch(url, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data
+        });
+    
+        return await res.json();
+    };
+
+    async function getResource(url) {
+        let res = await fetch(url);
+    
+        if (!res.ok) {
+            throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+        }
+    
+        return await res.json();
+    }
+
+    function bindPostData(form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            let statusMessage = document.createElement('img');
+            statusMessage.src = message.loading;
+            statusMessage.style.cssText = `
                 display: block;
                 margin: 0 auto;
-            `;//(внутрь дива помещаем то сообщение, которое надо показать)
-            form.insertAdjacentElement('afterend', statusMessege);//(помещаем на страницу)
+            `;
+            form.insertAdjacentElement('afterend', statusMessage);
+        
+            const formData = new FormData(form);
 
-            const formData = new FormData(form);//(проверить, чтобы в верстке в теге input были прописаны атрибуты name и они были уникальны для каждого input)
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            const object = {};//(чтобы объект formData превратить в формат JSON создаем переменную и ложим в нее пустой объект. Потом переберем formData при помощи цикла forEach и все данные внутри поместим в object. )
-            formData.forEach(function(value, key) {
-                object[key] = value;
-            });
-
-            fetch('server.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(object)//(когда мы получили обычный объект, а не formData, используем конвертацию JSON)
-            })
-            .then(data => data.text())
+            postData('http://localhost:3000/requests', json)
             .then(data => {
                 console.log(data);
                 showThanksModal(message.success);
@@ -274,39 +273,32 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             }).finally(() => {
                 form.reset();
             });
-
         });
-    }//(при работе на локальном сервере надо сбрасывать кеш. на Виндовс это shift + F5)
-    
-    // ===== 85оповещение пользователя =====
+    }
 
     function showThanksModal(message) {
-        const prewModalDialog = document.querySelector('.modal__dialog');
+        const prevModalDialog = document.querySelector('.modal__dialog');
 
-        prewModalDialog.classList.add('hide');//(скрываем предыдущий контент)
+        prevModalDialog.classList.add('hide');
         openModal();
 
         const thanksModal = document.createElement('div');
         thanksModal.classList.add('modal__dialog');
         thanksModal.innerHTML = `
             <div class="modal__content">
-                <div data-close class="modal__close">&times;</div>
+                <div class="modal__close" data-close>×</div>
                 <div class="modal__title">${message}</div>
             </div>
         `;
-    
         document.querySelector('.modal').append(thanksModal);
         setTimeout(() => {
             thanksModal.remove();
-            prewModalDialog.classList.add('show');//(показываем предыдущий контент)
-            prewModalDialog.classList.remove('hide');
+            prevModalDialog.classList.add('show');
+            prevModalDialog.classList.remove('hide');
             closeModal();
         }, 4000);
     }
-
-//========================================================
 });
-
 
 
 
