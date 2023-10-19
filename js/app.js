@@ -1,9 +1,8 @@
 
-
 window.addEventListener('DOMContentLoaded', () => {//(назначение большого глобального обработчика события на всю страницу)
 
-    // ====================== TABS ================
-    
+// ====================== TABS ================
+
     const tabs = document.querySelectorAll('.tabheader__item'),
             tabsContent = document.querySelectorAll('.tabcontent'),
             tabsParent = document.querySelector('.tabheader__items');//(получаем родителя табов, чтобы использовать делегирование событий)
@@ -22,8 +21,8 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
         tabsContent[i].style.display = 'block';
         tabs[i].classList.add('tabheader__item_active');
     }//(функция, которая показывает табы. i = элемент, который надо показать и добавить ему класс активности)
-    
-    
+
+
     hideTabContent();
     //showTabContent(0);//(передаем вместо i первый таб. Так надо было делать до стандарта ES6)
     showTabContent();
@@ -41,9 +40,9 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             });
         }
     });
-    
-    // ====================== TIMER ================
-    
+
+// ====================== TIMER ================
+
     const deadline = '2023-10-31';//(перменная делайн, в нее помещаем дату в виде строки)
 
     function getTimeRemaining(endtime) {//(функция, которая определяет разницу между дедлайном и нашим сегодняшним временем)
@@ -62,7 +61,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             minutes = Math.floor( (t/1000/60) % 60 ),
             hours = Math.floor( (t/(1000*60*60) % 24) );
         }
-    
+
         return {
             'total': t,//(общее кол-во миллисекунд)
             'days': days,
@@ -79,7 +78,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             return num;
         }
     }
-    
+
     function setClock(selector, endtime) {
 
         const timer = document.querySelector(selector),
@@ -104,57 +103,57 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             }
         }
     }
-    
+
     setClock('.timer', deadline);
-    
-    // ==================== MODAL ==================data-modal data-close
-    
-    const modalTrigger = document.querySelectorAll('[data-modal]'),
-          modal = document.querySelector('.modal');
-    
-      function openModal() {
-        modal.classList.add('show');
-        modal.classList.remove("hide");
-        document.body.style.overflow = 'hidden';//(чтобы не скролллился сайт при открытом окне)
-        clearInterval(modalTimerId);//(если пользователь сам открыл окно, то setTimeout не будет его повторно открывать через ...секунд)
+
+// ==================== MODAL ==================data-modal data-close
+
+const modalTrigger = document.querySelectorAll('[data-modal]'),
+        modal = document.querySelector('.modal');
+
+    function openModal() {
+    modal.classList.add('show');
+    modal.classList.remove("hide");
+    document.body.style.overflow = 'hidden';//(чтобы не скролллился сайт при открытом окне)
+    clearInterval(modalTimerId);//(если пользователь сам открыл окно, то setTimeout не будет его повторно открывать через ...секунд)
+}
+
+modalTrigger.forEach(btn => {
+    btn.addEventListener('click', openModal);
+}); 
+
+function closeModal() {
+    modal.classList.add('hide');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+modal.addEventListener('click', (event) => {//(чтобы окно закрывалось по клику на подложку, а не на модальное окно)
+    if (event.target === modal || event.target.getAttribute('data-close') == '') {
+        closeModal();
     }
-    
-    modalTrigger.forEach(btn => {
-        btn.addEventListener('click', openModal);
-    }); 
-    
-    function closeModal() {
-        modal.classList.add('hide');
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape'&& modal.classList.contains('show')) {//(В event есть свойство code, которое проверяет на какую клавишу нажал пользователь и у каждой клавиши есть свой код)
+        closeModal();
     }
-    
-    modal.addEventListener('click', (event) => {//(чтобы окно закрывалось по клику на подложку, а не на модальное окно)
-        if (event.target === modal || event.target.getAttribute('data-close') == '') {
-            closeModal();
-        }
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Escape'&& modal.classList.contains('show')) {//(В event есть свойство code, которое проверяет на какую клавишу нажал пользователь и у каждой клавиши есть свой код)
-            closeModal();
-        }
-    });//(событие 'keydown' вешается на документ и означает нажатие клавиши на клавиатуре)
-    
-    //(чтобы модальное окно открывалось, когда пользователь долистает до конца страницы и через несколько секунд задержки)
-    const modalTimerId = setTimeout(openModal, 50000);//закоментировать,чтобы не выскакивало
-    
-    function showModalByScroll() {
-        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {//(как только пользователь долистал до конца - 1 пиксель)
-            openModal();
-            window.removeEventListener('scroll', showModalByScroll);//(чтобы модалка выскакивала только один раз при скролле до конца страницы)
-        }
+});//(событие 'keydown' вешается на документ и означает нажатие клавиши на клавиатуре)
+
+//(чтобы модальное окно открывалось, когда пользователь долистает до конца страницы и через несколько секунд задержки)
+const modalTimerId = setTimeout(openModal, 50000);//закоментировать,чтобы не выскакивало
+
+function showModalByScroll() {
+    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {//(как только пользователь долистал до конца - 1 пиксель)
+        openModal();
+        window.removeEventListener('scroll', showModalByScroll);//(чтобы модалка выскакивала только один раз при скролле до конца страницы)
     }
-    
-    window.addEventListener('scroll', showModalByScroll);
-    //====================================================
-    //=========== ИСПОЛЬЗУЕМ КЛАССЫ ДЛЯ КАРТОЧЕК  =======
-    
+}
+
+window.addEventListener('scroll', showModalByScroll);
+//====================================================
+//=========== ИСПОЛЬЗУЕМ КЛАССЫ ДЛЯ КАРТОЧЕК  =======
+
     class MenuCard {
         constructor(src, alt, title, descr, price, parentSelector, ...classes) {
             this.src = src;
@@ -171,7 +170,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
         changeToUAH() {//(конвертация из доллара в гривню)
             this.price = this.price * this.transfer; 
         }
-    
+
         render() {
             const element = document.createElement('div');//(создаем див)
 
@@ -195,7 +194,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             this.parent.append(element);//(помещаем на страницу)
         }
     }
-    
+
     new MenuCard(
         "img/tabs/vegy.jpg",
         "vegy",
@@ -214,7 +213,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
         14,
         ".menu .container"
     ).render();
-    
+
     new MenuCard(
         "img/tabs/elite.jpg",
         "elite",
@@ -233,11 +232,11 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
         success: 'Спасибо, скоро мы с вами свяжемся!',
         failure: 'Что-то пошло не так...',
     };
-    
+
     forms.forEach(item => {//(перебираем, чтобы под каждую форму подвязать функцию postData)
         postData(item);
     });
-    
+
     function postData(form) {
         form.addEventListener('submit', (e) => {//(submit срабатывает каждый раз, как пытаемся отправить какую-то форму)
             e.preventDefault();//(отменяем стандартное поведение браузера, перезагрузку при отправке формы)
@@ -277,7 +276,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
 
         });
     }//(при работе на локальном сервере надо сбрасывать кеш. на Виндовс это shift + F5)
-    
+
     // ===== 85оповещение пользователя =====
 
     function showThanksModal(message) {
@@ -294,7 +293,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
                 <div class="modal__title">${message}</div>
             </div>
         `;
-    
+
         document.querySelector('.modal').append(thanksModal);
         setTimeout(() => {
             thanksModal.remove();
@@ -303,19 +302,7 @@ window.addEventListener('DOMContentLoaded', () => {//(назначение бо�
             closeModal();
         }, 4000);
     }
-    
-    //========================================================
-    fetch('http://localhost:3000/menu')
-        .then(data => data.json())
-        .then(res => console.log(res));
-    
+
+//======================================================== с гитхаба до fetch api
+
 });
-
-
-
-
-
-
-
-
-
